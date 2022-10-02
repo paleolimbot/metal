@@ -1,2 +1,3 @@
 PKG_CPPFLAGS=-I../src/metal-cpp
+PKG_LIBS=-framework Metal
 CXX_STD=CXX17

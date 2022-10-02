@@ -6,7 +6,15 @@
 \alias{metalme-package}
 \title{metalme: See If We Can Use Apple Metal In R}
 \description{
-Sees if we can use Apple Metal from R
+Sees if we can use Apple Metal from R.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/paleolimbot/metalme}
+  \item Report bugs at \url{https://github.com/paleolimbot/metalme/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Dewey Dunnington \email{dewey@fishandwhistle.net} (\href{https://orcid.org/0000-0002-9415-4582}{ORCID})

@@ -7,13 +7,16 @@ Authors@R:
              role = c("aut", "cre"),
              email = "dewey@fishandwhistle.net",
              comment = c(ORCID = "0000-0002-9415-4582"))
-Description: Sees if we can use Apple Metal from R
+Description: Sees if we can use Apple Metal from R.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 LinkingTo: 
     cpp11
-SystemRequirements: C++11
+SystemRequirements: C++17
 URL: https://github.com/paleolimbot/metalme
 BugReports: https://github.com/paleolimbot/metalme/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

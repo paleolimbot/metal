@@ -6,16 +6,24 @@
 #include <R_ext/Visibility.h>
 
 // code.cpp
-list device_info();
-extern "C" SEXP _metalme_device_info() {
+sexp cpp_default_device();
+extern "C" SEXP _metalme_cpp_default_device() {
   BEGIN_CPP11
-    return cpp11::as_sexp(device_info());
+    return cpp11::as_sexp(cpp_default_device());
+  END_CPP11
+}
+// code.cpp
+list cpp_device_info(sexp device_sexp);
+extern "C" SEXP _metalme_cpp_device_info(SEXP device_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_device_info(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp)));
   END_CPP11
 }
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_metalme_device_info", (DL_FUNC) &_metalme_device_info, 0},
+    {"_metalme_cpp_default_device", (DL_FUNC) &_metalme_cpp_default_device, 0},
+    {"_metalme_cpp_device_info",    (DL_FUNC) &_metalme_cpp_device_info,    1},
     {NULL, NULL, 0}
 };
 }

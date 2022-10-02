@@ -3,37 +3,41 @@ using namespace cpp11;
 
 #include "Metal/Metal.hpp"
 
-class Renderer {
+class DeviceWrapper {
  public:
-  Renderer(MTL::Device* pDevice = MTL::CreateSystemDefaultDevice())
-      : _pDevice(pDevice->retain()) {
-    _pCommandQueue = _pDevice->newCommandQueue();
+  DeviceWrapper(MTL::Device* pDevice = MTL::CreateSystemDefaultDevice())
+      : device_(pDevice->retain()) {
+    command_queue_ = device_->newCommandQueue();
   }
 
-  MTL::Device* device() { return _pDevice; }
+  MTL::Device* device() { return device_; }
+  MTL::CommandQueue* command_queue() { return command_queue_; }
 
-  ~Renderer() {
-    _pCommandQueue->release();
-    _pDevice->release();
+  ~DeviceWrapper() {
+    command_queue_->release();
+    device_->release();
   }
 
  private:
-  MTL::Device* _pDevice;
-  MTL::CommandQueue* _pCommandQueue;
+  MTL::Device* device_;
+  MTL::CommandQueue* command_queue_;
 };
 
 [[cpp11::register]]
-list device_info() {
-  Renderer renderer;
-  NS::String* name = renderer.device()->name();
-  NS::String* description = renderer.device()->description();
+sexp cpp_default_device() {
+  external_pointer<DeviceWrapper> device_ptr(new DeviceWrapper());
+  sexp device_sexp = (SEXP)device_ptr;
+  device_sexp.attr("class") = "metalme_device";
+  return device_sexp;
+}
 
-  writable::list out = {
-    as_sexp(name->utf8String()),
-    as_sexp(description->utf8String())
-  };
+[[cpp11::register]]
+list cpp_device_info(sexp device_sexp) {
+  external_pointer<DeviceWrapper> device_ptr(device_sexp);
+  NS::String* name = device_ptr->device()->name();
+  NS::String* description = device_ptr->device()->description();
 
+  writable::list out = {as_sexp(name->utf8String()), as_sexp(description->utf8String())};
   out.names() = {"name", "description"};
-
   return out;
 }
