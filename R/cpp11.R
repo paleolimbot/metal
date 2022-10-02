@@ -7,3 +7,7 @@ cpp_default_device <- function() {
 cpp_device_info <- function(device_sexp) {
   .Call(`_metalme_cpp_device_info`, device_sexp)
 }
+
+cpp_make_library <- function(device_sexp, code) {
+  .Call(`_metalme_cpp_make_library`, device_sexp, code)
+}

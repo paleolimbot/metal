@@ -5,9 +5,9 @@
 #' @export
 #'
 #' @examples
-#' default_device()
+#' mtl_default_device()
 #'
-default_device <- function() {
+mtl_default_device <- function() {
   cpp_default_device()
 }
 
@@ -16,10 +16,15 @@ print.metalme_device <- function(x, ...) {
   info <- cpp_device_info(x)
   cat(
     sprintf(
-      "<metalme_device>\nname: %s\ndescription: %s\n",
+      "<mtl_device>\nname: %s\ndescription: %s\n",
       info$name,
       info$description
     )
   )
   invisible(x)
+}
+
+
+mtl_make_library <- function(code, device = mtl_default_device()) {
+  cpp_make_library(device, code)
 }
