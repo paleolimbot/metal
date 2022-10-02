@@ -11,3 +11,7 @@ cpp_device_info <- function(device_sexp) {
 cpp_make_library <- function(device_sexp, code) {
   .Call(`_metalme_cpp_make_library`, device_sexp, code)
 }
+
+cpp_library_function_names <- function(library_sexp) {
+  .Call(`_metalme_cpp_library_function_names`, library_sexp)
+}

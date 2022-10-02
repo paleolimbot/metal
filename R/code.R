@@ -28,3 +28,8 @@ print.metalme_device <- function(x, ...) {
 mtl_make_library <- function(code, device = mtl_default_device()) {
   cpp_make_library(device, code)
 }
+
+#' @export
+names.mtl_library <- function(x) {
+  cpp_library_function_names(x)
+}

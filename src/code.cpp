@@ -82,3 +82,21 @@ sexp cpp_make_library(sexp device_sexp, std::string code) {
   library_sexp.attr("class") = "mtl_library";
   return library_sexp;
 }
+
+[[cpp11::register]]
+strings cpp_library_function_names(sexp library_sexp) {
+  if (!Rf_inherits(library_sexp, "mtl_library")) {
+    stop("`library` is not an mtl_library");
+  }
+
+  external_pointer<LibraryWrapper> library_ptr(library_sexp);
+  NS::Array* ns_names = library_ptr->library()->functionNames();
+
+  R_xlen_t num_names = ns_names->count();
+  writable::strings out(num_names);
+  for (R_xlen_t i = 0; i < num_names; i++) {
+    out[i] = ((NS::String*)ns_names->object(i))->utf8String();
+  }
+
+  return out;
+}
