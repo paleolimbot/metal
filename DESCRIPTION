@@ -15,3 +15,5 @@ RoxygenNote: 7.2.1
 LinkingTo: 
     cpp11
 SystemRequirements: C++11
+URL: https://github.com/paleolimbot/metalme
+BugReports: https://github.com/paleolimbot/metalme/issues
