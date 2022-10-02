@@ -1,1 +1,2 @@
+PKG_CPPFLAGS=-I../src/metal-cpp
 CXX_STD=CXX17

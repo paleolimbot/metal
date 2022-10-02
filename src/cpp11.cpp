@@ -6,17 +6,16 @@
 #include <R_ext/Visibility.h>
 
 // code.cpp
-void fun();
-extern "C" SEXP _metalme_fun() {
+list device_info();
+extern "C" SEXP _metalme_device_info() {
   BEGIN_CPP11
-    fun();
-    return R_NilValue;
+    return cpp11::as_sexp(device_info());
   END_CPP11
 }
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_metalme_fun", (DL_FUNC) &_metalme_fun, 0},
+    {"_metalme_device_info", (DL_FUNC) &_metalme_device_info, 0},
     {NULL, NULL, 0}
 };
 }
