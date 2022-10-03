@@ -19,3 +19,7 @@ cpp_library_function_names <- function(library_sexp) {
 cpp_library_function <- function(library_sexp, name) {
   .Call(`_metalme_cpp_library_function`, library_sexp, name)
 }
+
+cpp_function_info <- function(function_sexp) {
+  .Call(`_metalme_cpp_function_info`, function_sexp)
+}

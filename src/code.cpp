@@ -90,7 +90,8 @@ using FunctionXptr = OwnerXPtr<MTL::Function>;
   Owner<MTL::CompileOptions> options = MTL::CompileOptions::alloc();
   options.get()->init();
 
-  MTL::Library* library = device_xptr->get()->newLibrary(ns_code.get(), options.get(), &error);
+  MTL::Library* library =
+      device_xptr->get()->newLibrary(ns_code.get(), options.get(), &error);
   if (library == nullptr) {
     const char* description = error->localizedDescription()->utf8String();
     library->release();
@@ -126,4 +127,34 @@ using FunctionXptr = OwnerXPtr<MTL::Function>;
 
   FunctionXptr function_xptr(function);
   return (SEXP)function_xptr;
+}
+
+[[cpp11::register]] list cpp_function_info(sexp function_sexp) {
+  FunctionXptr function_xptr(function_sexp);
+
+  NS::String* ns_name = function_xptr->get()->name();
+
+  MTL::FunctionType type = function_xptr->get()->functionType();
+  std::string type_string;
+  switch (type) {
+    case MTL::FunctionType::FunctionTypeFragment:
+      type_string = "fragment";
+      break;
+    case MTL::FunctionType::FunctionTypeIntersection:
+      type_string = "intersection";
+      break;
+    case MTL::FunctionType::FunctionTypeKernel:
+      type_string = "kernel";
+      break;
+    case MTL::FunctionType::FunctionTypeVertex:
+      type_string = "vertex";
+      break;
+    default:
+      type_string = "unknown";
+      break;
+  }
+
+  writable::list out = {as_sexp(ns_name->utf8String()), as_sexp(type_string)};
+  out.names() = {"name", "type"};
+  return out;
 }

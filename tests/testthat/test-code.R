@@ -28,4 +28,15 @@ test_that("mtl_make_library() creates a library for valid code", {
 
   expect_s3_class(lib, "mtl_library")
   expect_identical(names(lib), "add_arrays")
+  expect_s3_class(lib$add_arrays, "mtl_function")
+  expect_identical(
+    cpp_function_info(lib$add_arrays),
+    list(name = "add_arrays", type = "kernel")
+  )
+  expect_identical(
+    cpp_function_info(lib[[1]]),
+    list(name = "add_arrays", type = "kernel")
+  )
+
+  expect_output(expect_identical(print(lib), lib), "mtl_library")
 })

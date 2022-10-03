@@ -40,11 +40,19 @@ extern "C" SEXP _metalme_cpp_library_function(SEXP library_sexp, SEXP name) {
     return cpp11::as_sexp(cpp_library_function(cpp11::as_cpp<cpp11::decay_t<sexp>>(library_sexp), cpp11::as_cpp<cpp11::decay_t<std::string>>(name)));
   END_CPP11
 }
+// code.cpp
+list cpp_function_info(sexp function_sexp);
+extern "C" SEXP _metalme_cpp_function_info(SEXP function_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_function_info(cpp11::as_cpp<cpp11::decay_t<sexp>>(function_sexp)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_metalme_cpp_default_device",         (DL_FUNC) &_metalme_cpp_default_device,         0},
     {"_metalme_cpp_device_info",            (DL_FUNC) &_metalme_cpp_device_info,            1},
+    {"_metalme_cpp_function_info",          (DL_FUNC) &_metalme_cpp_function_info,          1},
     {"_metalme_cpp_library_function",       (DL_FUNC) &_metalme_cpp_library_function,       2},
     {"_metalme_cpp_library_function_names", (DL_FUNC) &_metalme_cpp_library_function_names, 1},
     {"_metalme_cpp_make_library",           (DL_FUNC) &_metalme_cpp_make_library,           2},
