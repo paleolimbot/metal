@@ -9,7 +9,7 @@ test_that("device has a print method", {
 })
 
 test_that("mtl_make_library() errors for invalid arguments", {
-  expect_error(mtl_make_library("", device = NULL), "not an mtl_device")
+  expect_error(mtl_make_library("", device = NULL), "Invalid input type")
   expect_error(
     mtl_make_library("this is invalid metal code"),
     "this is invalid metal code"
