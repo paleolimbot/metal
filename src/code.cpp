@@ -52,8 +52,14 @@ const char* owner_xptr_classname<MTL::Library>() {
   return "mtl_library";
 }
 
+template <>
+const char* owner_xptr_classname<MTL::Function>() {
+  return "mtl_function";
+}
+
 using DeviceXPtr = OwnerXPtr<MTL::Device>;
 using LibraryXPtr = OwnerXPtr<MTL::Library>;
+using FunctionXptr = OwnerXPtr<MTL::Function>;
 
 [[cpp11::register]] sexp cpp_default_device() {
   MTL::Device* default_device = MTL::CreateSystemDefaultDevice();
@@ -79,16 +85,13 @@ using LibraryXPtr = OwnerXPtr<MTL::Library>;
   DeviceXPtr device_xptr(device_sexp);
 
   NS::Error* error = nullptr;
-  NS::String* ns_code =
+  Owner<NS::String> ns_code =
       NS::String::string(code.c_str(), NS::StringEncoding::UTF8StringEncoding);
-  MTL::CompileOptions* options = MTL::CompileOptions::alloc();
-  options->init();
+  Owner<MTL::CompileOptions> options = MTL::CompileOptions::alloc();
+  options.get()->init();
 
-  MTL::Library* library = device_xptr->get()->newLibrary(ns_code, options, &error);
-  ns_code->release();
-  options->release();
-
-  if (error != nullptr) {
+  MTL::Library* library = device_xptr->get()->newLibrary(ns_code.get(), options.get(), &error);
+  if (library == nullptr) {
     const char* description = error->localizedDescription()->utf8String();
     library->release();
     stop("Error compiling metal code:\n%s", description);
@@ -109,4 +112,18 @@ using LibraryXPtr = OwnerXPtr<MTL::Library>;
   }
 
   return out;
+}
+
+[[cpp11::register]] sexp cpp_library_function(sexp library_sexp, std::string name) {
+  LibraryXPtr library_xptr(library_sexp);
+  Owner<NS::String> ns_name =
+      NS::String::string(name.c_str(), NS::StringEncoding::UTF8StringEncoding);
+  MTL::Function* function = library_xptr->get()->newFunction(ns_name.get());
+
+  if (function == nullptr) {
+    return R_NilValue;
+  }
+
+  FunctionXptr function_xptr(function);
+  return (SEXP)function_xptr;
 }
