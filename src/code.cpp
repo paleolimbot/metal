@@ -6,16 +6,25 @@ using namespace cpp11;
 template <typename T>
 class Owner {
  public:
+  Owner() : ptr_(nullptr) {}
   Owner(T* ptr) : ptr_(ptr->retain()) {}
+
+  void reset(T* ptr) {
+    if (ptr_ != nullptr) {
+      ptr_->release();
+    }
+    ptr_ = ptr->retain();
+  }
+
   T* get() { return ptr_; }
-  ~Owner() { ptr_->release(); }
+
+  ~Owner() { reset(nullptr); }
 
  private:
   T* ptr_;
 };
 
-[[cpp11::register]]
-sexp cpp_default_device() {
+[[cpp11::register]] sexp cpp_default_device() {
   MTL::Device* default_device = MTL::CreateSystemDefaultDevice();
   if (default_device == nullptr) {
     stop("No default device found");
@@ -27,8 +36,7 @@ sexp cpp_default_device() {
   return device_sexp;
 }
 
-[[cpp11::register]]
-list cpp_device_info(sexp device_sexp) {
+[[cpp11::register]] list cpp_device_info(sexp device_sexp) {
   external_pointer<Owner<MTL::Device>> device_ptr(device_sexp);
   NS::String* name = device_ptr->get()->name();
   NS::String* description = device_ptr->get()->description();
@@ -38,20 +46,7 @@ list cpp_device_info(sexp device_sexp) {
   return out;
 }
 
-class LibraryWrapper {
- public:
-  LibraryWrapper(MTL::Library* library) : library_(library->retain()) {}
-
-  MTL::Library* library() { return library_; }
-
-  ~LibraryWrapper() { library_->release(); }
-
- private:
-  MTL::Library* library_;
-};
-
-[[cpp11::register]]
-sexp cpp_make_library(sexp device_sexp, std::string code) {
+[[cpp11::register]] sexp cpp_make_library(sexp device_sexp, std::string code) {
   if (!Rf_inherits(device_sexp, "mtl_device")) {
     stop("`device` is not an mtl_device");
   }
@@ -74,20 +69,19 @@ sexp cpp_make_library(sexp device_sexp, std::string code) {
     stop("Error compiling metal code:\n%s", description);
   }
 
-  external_pointer<LibraryWrapper> library_ptr(new LibraryWrapper(library));
+  external_pointer<Owner<MTL::Library>> library_ptr(new Owner<MTL::Library>(library));
   sexp library_sexp = (SEXP)library_ptr;
   library_sexp.attr("class") = "mtl_library";
   return library_sexp;
 }
 
-[[cpp11::register]]
-strings cpp_library_function_names(sexp library_sexp) {
+[[cpp11::register]] strings cpp_library_function_names(sexp library_sexp) {
   if (!Rf_inherits(library_sexp, "mtl_library")) {
     stop("`library` is not an mtl_library");
   }
 
-  external_pointer<LibraryWrapper> library_ptr(library_sexp);
-  NS::Array* ns_names = library_ptr->library()->functionNames();
+  external_pointer<Owner<MTL::Library>> library_ptr(library_sexp);
+  NS::Array* ns_names = library_ptr->get()->functionNames();
 
   R_xlen_t num_names = ns_names->count();
   writable::strings out(num_names);
