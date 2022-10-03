@@ -3,29 +3,25 @@ using namespace cpp11;
 
 #include "Metal/Metal.hpp"
 
-class DeviceWrapper {
+template <typename T>
+class Owner {
  public:
-  DeviceWrapper(MTL::Device* pDevice = MTL::CreateSystemDefaultDevice())
-      : device_(pDevice->retain()) {
-    command_queue_ = device_->newCommandQueue();
-  }
-
-  MTL::Device* device() { return device_; }
-  MTL::CommandQueue* command_queue() { return command_queue_; }
-
-  ~DeviceWrapper() {
-    command_queue_->release();
-    device_->release();
-  }
+  Owner(T* ptr) : ptr_(ptr->retain()) {}
+  T* get() { return ptr_; }
+  ~Owner() { ptr_->release(); }
 
  private:
-  MTL::Device* device_;
-  MTL::CommandQueue* command_queue_;
+  T* ptr_;
 };
 
 [[cpp11::register]]
 sexp cpp_default_device() {
-  external_pointer<DeviceWrapper> device_ptr(new DeviceWrapper());
+  MTL::Device* default_device = MTL::CreateSystemDefaultDevice();
+  if (default_device == nullptr) {
+    stop("No default device found");
+  }
+
+  external_pointer<Owner<MTL::Device>> device_ptr(new Owner<MTL::Device>(default_device));
   sexp device_sexp = (SEXP)device_ptr;
   device_sexp.attr("class") = "mtl_device";
   return device_sexp;
@@ -33,9 +29,9 @@ sexp cpp_default_device() {
 
 [[cpp11::register]]
 list cpp_device_info(sexp device_sexp) {
-  external_pointer<DeviceWrapper> device_ptr(device_sexp);
-  NS::String* name = device_ptr->device()->name();
-  NS::String* description = device_ptr->device()->description();
+  external_pointer<Owner<MTL::Device>> device_ptr(device_sexp);
+  NS::String* name = device_ptr->get()->name();
+  NS::String* description = device_ptr->get()->description();
 
   writable::list out = {as_sexp(name->utf8String()), as_sexp(description->utf8String())};
   out.names() = {"name", "description"};
@@ -60,14 +56,15 @@ sexp cpp_make_library(sexp device_sexp, std::string code) {
     stop("`device` is not an mtl_device");
   }
 
-  external_pointer<DeviceWrapper> device_ptr(device_sexp);
+  external_pointer<Owner<MTL::Device>> device_ptr(device_sexp);
 
   NS::Error* error = nullptr;
-  NS::String* ns_code = NS::String::string(code.c_str(), NS::StringEncoding::UTF8StringEncoding);
+  NS::String* ns_code =
+      NS::String::string(code.c_str(), NS::StringEncoding::UTF8StringEncoding);
   MTL::CompileOptions* options = MTL::CompileOptions::alloc();
   options->init();
 
-  MTL::Library* library = device_ptr->device()->newLibrary(ns_code, options, &error);
+  MTL::Library* library = device_ptr->get()->newLibrary(ns_code, options, &error);
   ns_code->release();
   options->release();
 
