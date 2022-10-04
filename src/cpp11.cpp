@@ -5,42 +5,42 @@
 #include "cpp11/declarations.hpp"
 #include <R_ext/Visibility.h>
 
-// code.cpp
+// metal.cpp
 sexp cpp_default_device();
 extern "C" SEXP _metal_cpp_default_device() {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_default_device());
   END_CPP11
 }
-// code.cpp
+// metal.cpp
 list cpp_device_info(sexp device_sexp);
 extern "C" SEXP _metal_cpp_device_info(SEXP device_sexp) {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_device_info(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp)));
   END_CPP11
 }
-// code.cpp
+// metal.cpp
 sexp cpp_make_library(sexp device_sexp, std::string code);
 extern "C" SEXP _metal_cpp_make_library(SEXP device_sexp, SEXP code) {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_make_library(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp), cpp11::as_cpp<cpp11::decay_t<std::string>>(code)));
   END_CPP11
 }
-// code.cpp
+// metal.cpp
 strings cpp_library_function_names(sexp library_sexp);
 extern "C" SEXP _metal_cpp_library_function_names(SEXP library_sexp) {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_library_function_names(cpp11::as_cpp<cpp11::decay_t<sexp>>(library_sexp)));
   END_CPP11
 }
-// code.cpp
+// metal.cpp
 sexp cpp_library_function(sexp library_sexp, std::string name);
 extern "C" SEXP _metal_cpp_library_function(SEXP library_sexp, SEXP name) {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_library_function(cpp11::as_cpp<cpp11::decay_t<sexp>>(library_sexp), cpp11::as_cpp<cpp11::decay_t<std::string>>(name)));
   END_CPP11
 }
-// code.cpp
+// metal.cpp
 list cpp_function_info(sexp function_sexp);
 extern "C" SEXP _metal_cpp_function_info(SEXP function_sexp) {
   BEGIN_CPP11

@@ -4,8 +4,14 @@ curl::curl_download(
   "data-raw/metal.zip"
 )
 unzip("data-raw/metal.zip", exdir = "data-raw")
-unlink("src/metal-cpp", recursive = T)
-fs::dir_copy("data-raw/metal-cpp", "src")
+
+withr::with_dir("data-raw/metal-cpp", {
+  system("python3 SingleHeader/MakeSingleHeader.py Foundation/Foundation.hpp QuartzCore/QuartzCore.hpp Metal/Metal.hpp")
+})
+
+unlink("inst/include/Metal", recursive = TRUE)
+dir.create("inst/include/Metal", recursive = TRUE)
+file.copy("data-raw/metal-cpp/SingleHeader/Metal.hpp", "inst/include/Metal")
 
 unlink("data-raw/metal.zip")
 unlink("data-raw/metal-cpp", recursive = TRUE)
