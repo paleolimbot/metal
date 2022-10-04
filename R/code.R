@@ -1,7 +1,7 @@
 
 #' Get the default metal device
 #'
-#' @return An external pointer of class metalme_device
+#' @return An external pointer of class metal_device
 #' @export
 #'
 #' @examples

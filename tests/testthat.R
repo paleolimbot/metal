@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(metalme)
+library(metal)
 
-test_check("metalme")
+test_check("metal")

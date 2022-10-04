@@ -7,7 +7,7 @@
 mtl_default_device()
 }
 \value{
-An external pointer of class metalme_device
+An external pointer of class metal_device
 }
 \description{
 Get the default metal device

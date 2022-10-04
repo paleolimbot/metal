@@ -2,6 +2,6 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @useDynLib metalme, .registration = TRUE
+#' @useDynLib metal, .registration = TRUE
 ## usethis namespace: end
 NULL
