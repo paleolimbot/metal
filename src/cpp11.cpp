@@ -47,15 +47,48 @@ extern "C" SEXP _metal_cpp_function_info(SEXP function_sexp) {
     return cpp11::as_sexp(cpp_function_info(cpp11::as_cpp<cpp11::decay_t<sexp>>(function_sexp)));
   END_CPP11
 }
+// metal.cpp
+sexp cpp_command_queue(sexp device_sexp);
+extern "C" SEXP _metal_cpp_command_queue(SEXP device_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_command_queue(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp)));
+  END_CPP11
+}
+// metal.cpp
+sexp cpp_compute_pipeline(sexp function_sexp);
+extern "C" SEXP _metal_cpp_compute_pipeline(SEXP function_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_compute_pipeline(cpp11::as_cpp<cpp11::decay_t<sexp>>(function_sexp)));
+  END_CPP11
+}
+// metal.cpp
+sexp cpp_buffer(sexp device_sexp, sexp object);
+extern "C" SEXP _metal_cpp_buffer(SEXP device_sexp, SEXP object) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_buffer(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(object)));
+  END_CPP11
+}
+// metal.cpp
+void cpp_compute_pipeline_execute(sexp pipeline_sexp, sexp commmand_queue_sexp, list args);
+extern "C" SEXP _metal_cpp_compute_pipeline_execute(SEXP pipeline_sexp, SEXP commmand_queue_sexp, SEXP args) {
+  BEGIN_CPP11
+    cpp_compute_pipeline_execute(cpp11::as_cpp<cpp11::decay_t<sexp>>(pipeline_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(commmand_queue_sexp), cpp11::as_cpp<cpp11::decay_t<list>>(args));
+    return R_NilValue;
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_metal_cpp_default_device",         (DL_FUNC) &_metal_cpp_default_device,         0},
-    {"_metal_cpp_device_info",            (DL_FUNC) &_metal_cpp_device_info,            1},
-    {"_metal_cpp_function_info",          (DL_FUNC) &_metal_cpp_function_info,          1},
-    {"_metal_cpp_library_function",       (DL_FUNC) &_metal_cpp_library_function,       2},
-    {"_metal_cpp_library_function_names", (DL_FUNC) &_metal_cpp_library_function_names, 1},
-    {"_metal_cpp_make_library",           (DL_FUNC) &_metal_cpp_make_library,           2},
+    {"_metal_cpp_buffer",                   (DL_FUNC) &_metal_cpp_buffer,                   2},
+    {"_metal_cpp_command_queue",            (DL_FUNC) &_metal_cpp_command_queue,            1},
+    {"_metal_cpp_compute_pipeline",         (DL_FUNC) &_metal_cpp_compute_pipeline,         1},
+    {"_metal_cpp_compute_pipeline_execute", (DL_FUNC) &_metal_cpp_compute_pipeline_execute, 3},
+    {"_metal_cpp_default_device",           (DL_FUNC) &_metal_cpp_default_device,           0},
+    {"_metal_cpp_device_info",              (DL_FUNC) &_metal_cpp_device_info,              1},
+    {"_metal_cpp_function_info",            (DL_FUNC) &_metal_cpp_function_info,            1},
+    {"_metal_cpp_library_function",         (DL_FUNC) &_metal_cpp_library_function,         2},
+    {"_metal_cpp_library_function_names",   (DL_FUNC) &_metal_cpp_library_function_names,   1},
+    {"_metal_cpp_make_library",             (DL_FUNC) &_metal_cpp_make_library,             2},
     {NULL, NULL, 0}
 };
 }

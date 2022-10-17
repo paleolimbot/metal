@@ -2,7 +2,7 @@
 % Please edit documentation in R/metal.R
 \name{mtl_make_library}
 \alias{mtl_make_library}
-\title{Create a metal function lirary}
+\title{Create a metal function library}
 \usage{
 mtl_make_library(code, device = mtl_default_device())
 }
@@ -15,7 +15,7 @@ mtl_make_library(code, device = mtl_default_device())
 An external pointer of class mtl_library
 }
 \description{
-Create a metal function lirary
+Create a metal function library
 }
 \examples{
 mtl_make_library("

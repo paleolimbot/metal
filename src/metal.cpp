@@ -57,9 +57,27 @@ const char* owner_xptr_classname<MTL::Function>() {
   return "mtl_function";
 }
 
+template <>
+const char* owner_xptr_classname<MTL::ComputePipelineState>() {
+  return "mtl_compute_pipeline";
+}
+
+template <>
+const char* owner_xptr_classname<MTL::CommandQueue>() {
+  return "mtl_command_queue";
+}
+
+template <>
+const char* owner_xptr_classname<MTL::Buffer>() {
+  return "mtl_buffer";
+}
+
 using DeviceXPtr = OwnerXPtr<MTL::Device>;
 using LibraryXPtr = OwnerXPtr<MTL::Library>;
 using FunctionXptr = OwnerXPtr<MTL::Function>;
+using ComputePipelineXptr = OwnerXPtr<MTL::ComputePipelineState>;
+using CommandQueueXptr = OwnerXPtr<MTL::CommandQueue>;
+using BufferXptr = OwnerXPtr<MTL::Buffer>;
 
 [[cpp11::register]] sexp cpp_default_device() {
   MTL::Device* default_device = MTL::CreateSystemDefaultDevice();
@@ -94,7 +112,6 @@ using FunctionXptr = OwnerXPtr<MTL::Function>;
       device_xptr->get()->newLibrary(ns_code.get(), options.get(), &error);
   if (library == nullptr) {
     const char* description = error->localizedDescription()->utf8String();
-    library->release();
     stop("Error compiling metal code:\n%s", description);
   }
 
@@ -157,4 +174,70 @@ using FunctionXptr = OwnerXPtr<MTL::Function>;
   writable::list out = {as_sexp(ns_name->utf8String()), as_sexp(type_string)};
   out.names() = {"name", "type"};
   return out;
+}
+
+[[cpp11::register]] sexp cpp_command_queue(sexp device_sexp) {
+  DeviceXPtr device_xptr(device_sexp);
+  CommandQueueXptr command_queue_xptr(device_xptr->get()->newCommandQueue());
+  return (SEXP)command_queue_xptr;
+}
+
+[[cpp11::register]] sexp cpp_compute_pipeline(sexp function_sexp) {
+  FunctionXptr function_xptr(function_sexp);
+  NS::Error* error = nullptr;
+  MTL::Device* device = function_xptr->get()->device();
+  MTL::ComputePipelineState* pipeline =
+      device->newComputePipelineState(function_xptr->get(), &error);
+  if (pipeline == nullptr) {
+    const char* description = error->localizedDescription()->utf8String();
+    stop("Error creating compute pipeline:\n%s", description);
+  }
+
+  ComputePipelineXptr pipeline_xptr(pipeline);
+  return (SEXP)pipeline_xptr;
+}
+
+[[cpp11::register]] sexp cpp_buffer(sexp device_sexp, sexp object) {
+  DeviceXPtr device_xptr(device_sexp);
+  // TOOD: buffer from R object using
+  // MTL::Buffer* buffer = device_xptr->get()->newBuffer(pointer, length, options, deallocator);
+  //BufferXptr buffer_xptr(buffer);
+  //return (SEXP)buffer_xptr;
+  return R_NilValue;
+}
+
+[[cpp11::register]] void cpp_compute_pipeline_execute(sexp pipeline_sexp,
+                                                      sexp commmand_queue_sexp,
+                                                      list args) {
+  ComputePipelineXptr pipeline_xptr(pipeline_sexp);
+  CommandQueueXptr command_queue_xptr(commmand_queue_sexp);
+
+  MTL::CommandBuffer* command_buffer = command_queue_xptr->get()->commandBuffer();
+  MTL::ComputeCommandEncoder* command_encoder = command_buffer->computeCommandEncoder();
+  command_encoder->setComputePipelineState(pipeline_xptr->get());
+
+  for (R_xlen_t i = 0; i < args.size(); i++) {
+    SEXP item = args[i];
+    if (item == R_NilValue) {
+      continue;
+    }
+
+    BufferXptr buffer_xptr(item);
+    command_encoder->setBuffer(buffer_xptr->get(), 0, i);
+  }
+
+  NS::UInteger array_length = 1;
+  MTL::Size grid_size = MTL::Size::Make(array_length, 1, 1);
+  NS::UInteger thread_group_size_n =
+      pipeline_xptr->get()->maxTotalThreadsPerThreadgroup();
+  if (thread_group_size_n > array_length) {
+    thread_group_size_n = array_length;
+  }
+
+  MTL::Size thread_group_size = MTL::Size::Make(thread_group_size_n, 1, 1);
+
+  command_encoder->dispatchThreads(grid_size, thread_group_size);
+  command_encoder->endEncoding();
+  command_buffer->commit();
+  command_buffer->waitUntilCompleted();
 }

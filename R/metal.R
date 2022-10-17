@@ -25,7 +25,7 @@ print.mtl_device <- function(x, ...) {
 }
 
 
-#' Create a metal function lirary
+#' Create a metal function library
 #'
 #' @param code Code in the metal shading language
 #' @param device A [mtl_device][mtl_default_device]
@@ -82,4 +82,9 @@ print.mtl_library <- function(x, ...) {
   }
 
   invisible(x)
+}
+
+
+mtl_compute_pipeline <- function(func) {
+  cpp_compute_pipeline(func)
 }

@@ -39,4 +39,7 @@ test_that("mtl_make_library() creates a library for valid code", {
   )
 
   expect_output(expect_identical(print(lib), lib), "mtl_library")
+
+  # check that this function compiles
+  expect_s3_class(mtl_compute_pipeline(lib$add_arrays), "mtl_compute_pipeline")
 })
