@@ -7,13 +7,13 @@ template <typename T>
 class Owner {
  public:
   Owner() : ptr_(nullptr) {}
-  Owner(T* ptr) : ptr_(ptr->retain()) {}
+  Owner(T* ptr) : ptr_(ptr) {}
 
   void reset(T* ptr) {
     if (ptr_ != nullptr) {
       ptr_->release();
     }
-    ptr_ = ptr->retain();
+    ptr_ = ptr;
   }
 
   T* get() { return ptr_; }
@@ -85,7 +85,7 @@ using BufferXptr = OwnerXPtr<MTL::Buffer>;
     stop("No default device found");
   }
 
-  DeviceXPtr device(default_device);
+  DeviceXPtr device(default_device->retain());
   return (SEXP)device;
 }
 
