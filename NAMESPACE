@@ -2,6 +2,9 @@
 
 S3method("$",mtl_library)
 S3method("[[",mtl_library)
+S3method(Math,mtl_floats)
+S3method(Ops,mtl_floats)
+S3method(Summary,mtl_floats)
 S3method(as.double,mtl_floats)
 S3method(as.integer,mtl_floats)
 S3method(as.logical,mtl_floats)

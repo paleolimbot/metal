@@ -118,5 +118,3 @@ sexp cpp_floats_from_dbl(doubles x) {
   }
   return result;
 }
-
-

@@ -14,3 +14,10 @@ test_that("as_mtl_floats() works", {
   expect_error(as_mtl_floats(structure(integer(), class = "custom_int")), "Can't convert")
   expect_error(as_mtl_floats(complex()), "Can't convert")
 })
+
+test_that("ops work for mtl_floats", {
+  expect_true(as_mtl_floats(1) == 1)
+  expect_equal(as_mtl_floats(1) + 1, 2)
+  expect_equal(-as_mtl_floats(1), -1)
+  expect_equal(sum(as_mtl_floats(1:10)), 55)
+})

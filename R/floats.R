@@ -53,3 +53,22 @@ as.double.mtl_floats <- function(x, ...) {
 format.mtl_floats <- function(x, ...) {
   format(cpp_from_floats_dbl(x), ...)
 }
+
+#' @export
+Math.mtl_floats <- function(x, ...) {
+  do.call(.Generic, list(cpp_from_floats_dbl(x), ...))
+}
+
+#' @export
+Ops.mtl_floats <- function(e1, e2) {
+  if (missing(e2)) {
+    do.call(.Generic, list(cpp_from_floats_dbl(e1)))
+  } else {
+    do.call(.Generic, list(as.double(e1), as.double(e2)))
+  }
+}
+
+#' @export
+Summary.mtl_floats <- function(x, ..., na.rm = FALSE) {
+  do.call(.Generic, list(cpp_from_floats_dbl(x)))
+}
