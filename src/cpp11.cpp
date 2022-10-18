@@ -5,6 +5,41 @@
 #include "cpp11/declarations.hpp"
 #include <R_ext/Visibility.h>
 
+// floats.cpp
+sexp cpp_floats(double size, double fill);
+extern "C" SEXP _metal_cpp_floats(SEXP size, SEXP fill) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_floats(cpp11::as_cpp<cpp11::decay_t<double>>(size), cpp11::as_cpp<cpp11::decay_t<double>>(fill)));
+  END_CPP11
+}
+// floats.cpp
+sexp cpp_as_floats(sexp x);
+extern "C" SEXP _metal_cpp_as_floats(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_as_floats(cpp11::as_cpp<cpp11::decay_t<sexp>>(x)));
+  END_CPP11
+}
+// floats.cpp
+logicals cpp_from_floats_lgl(sexp floats_sexp);
+extern "C" SEXP _metal_cpp_from_floats_lgl(SEXP floats_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_from_floats_lgl(cpp11::as_cpp<cpp11::decay_t<sexp>>(floats_sexp)));
+  END_CPP11
+}
+// floats.cpp
+integers cpp_from_floats_int(sexp floats_sexp);
+extern "C" SEXP _metal_cpp_from_floats_int(SEXP floats_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_from_floats_int(cpp11::as_cpp<cpp11::decay_t<sexp>>(floats_sexp)));
+  END_CPP11
+}
+// floats.cpp
+doubles cpp_from_floats_dbl(sexp floats_sexp);
+extern "C" SEXP _metal_cpp_from_floats_dbl(SEXP floats_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_from_floats_dbl(cpp11::as_cpp<cpp11::decay_t<sexp>>(floats_sexp)));
+  END_CPP11
+}
 // metal.cpp
 sexp cpp_default_device();
 extern "C" SEXP _metal_cpp_default_device() {
@@ -79,12 +114,17 @@ extern "C" SEXP _metal_cpp_compute_pipeline_execute(SEXP pipeline_sexp, SEXP com
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
+    {"_metal_cpp_as_floats",                (DL_FUNC) &_metal_cpp_as_floats,                1},
     {"_metal_cpp_buffer",                   (DL_FUNC) &_metal_cpp_buffer,                   2},
     {"_metal_cpp_command_queue",            (DL_FUNC) &_metal_cpp_command_queue,            1},
     {"_metal_cpp_compute_pipeline",         (DL_FUNC) &_metal_cpp_compute_pipeline,         1},
     {"_metal_cpp_compute_pipeline_execute", (DL_FUNC) &_metal_cpp_compute_pipeline_execute, 3},
     {"_metal_cpp_default_device",           (DL_FUNC) &_metal_cpp_default_device,           0},
     {"_metal_cpp_device_info",              (DL_FUNC) &_metal_cpp_device_info,              1},
+    {"_metal_cpp_floats",                   (DL_FUNC) &_metal_cpp_floats,                   2},
+    {"_metal_cpp_from_floats_dbl",          (DL_FUNC) &_metal_cpp_from_floats_dbl,          1},
+    {"_metal_cpp_from_floats_int",          (DL_FUNC) &_metal_cpp_from_floats_int,          1},
+    {"_metal_cpp_from_floats_lgl",          (DL_FUNC) &_metal_cpp_from_floats_lgl,          1},
     {"_metal_cpp_function_info",            (DL_FUNC) &_metal_cpp_function_info,            1},
     {"_metal_cpp_library_function",         (DL_FUNC) &_metal_cpp_library_function,         2},
     {"_metal_cpp_library_function_names",   (DL_FUNC) &_metal_cpp_library_function_names,   1},
