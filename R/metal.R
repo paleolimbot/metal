@@ -85,6 +85,35 @@ print.mtl_library <- function(x, ...) {
 }
 
 
+#' Create buffers
+#'
+#' @param x An object to convert to a buffer
+#' @inheritParams mtl_make_library
+#' @param ... Passed to S3 methods
+#'
+#' @return An object of class 'mtl_buffer'
+#' @export
+#'
+#' @examples
+#' as_mtl_buffer(as_mtl_floats(1:10))
+#'
+as_mtl_buffer <- function(x, ...) {
+  UseMethod("as_mtl_buffer")
+}
+
+#' @rdname as_mtl_buffer
+#' @export
+as_mtl_buffer.mtl_buffer <- function(x, ...) {
+  x
+}
+
+#' @rdname as_mtl_buffer
+#' @export
+as_mtl_buffer.mtl_floats <- function(x, ..., device = mtl_default_device()) {
+  cpp_buffer(device, x)
+}
+
+
 mtl_compute_pipeline <- function(func) {
   cpp_compute_pipeline(func)
 }

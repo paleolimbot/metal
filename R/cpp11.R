@@ -44,16 +44,16 @@ cpp_function_info <- function(function_sexp) {
   .Call(`_metal_cpp_function_info`, function_sexp)
 }
 
+cpp_buffer <- function(device_sexp, x) {
+  .Call(`_metal_cpp_buffer`, device_sexp, x)
+}
+
 cpp_command_queue <- function(device_sexp) {
   .Call(`_metal_cpp_command_queue`, device_sexp)
 }
 
 cpp_compute_pipeline <- function(function_sexp) {
   .Call(`_metal_cpp_compute_pipeline`, function_sexp)
-}
-
-cpp_buffer <- function(device_sexp, object) {
-  .Call(`_metal_cpp_buffer`, device_sexp, object)
 }
 
 cpp_compute_pipeline_execute <- function(pipeline_sexp, commmand_queue_sexp, args) {

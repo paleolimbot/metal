@@ -1,46 +1,13 @@
+
+#include <unordered_map>
+
 #include <cpp11.hpp>
 using namespace cpp11;
 
 #include "Metal/Metal.hpp"
 
 template <typename T>
-class Owner {
- public:
-  Owner() : ptr_(nullptr) {}
-  Owner(T* ptr) : ptr_(ptr) {}
-
-  void reset(T* ptr) {
-    if (ptr_ != nullptr) {
-      ptr_->release();
-    }
-    ptr_ = ptr;
-  }
-
-  T* get() { return ptr_; }
-
-  ~Owner() { reset(nullptr); }
-
- private:
-  T* ptr_;
-};
-
-template <typename T>
 const char* owner_xptr_classname();
-
-template <typename T>
-class OwnerXPtr : public external_pointer<Owner<T>> {
- public:
-  OwnerXPtr(T* ptr) : external_pointer<Owner<T>>(new Owner<T>(ptr)) {
-    sexp xptr_sexp = (SEXP)(*this);
-    xptr_sexp.attr("class") = owner_xptr_classname<T>();
-  }
-
-  OwnerXPtr(sexp xptr) : external_pointer<Owner<T>>(xptr) {
-    if (!Rf_inherits(xptr, owner_xptr_classname<T>())) {
-      stop("external pointer does not inherit from '%s'", owner_xptr_classname<T>());
-    }
-  }
-};
 
 template <>
 const char* owner_xptr_classname<MTL::Device>() {
@@ -72,6 +39,50 @@ const char* owner_xptr_classname<MTL::Buffer>() {
   return "mtl_buffer";
 }
 
+template <>
+const char* owner_xptr_classname<NS::String>() {
+  return "ns_string";
+}
+
+template <>
+const char* owner_xptr_classname<MTL::CompileOptions>() {
+  return "mtl_compile_options";
+}
+
+template <typename T>
+class Owner {
+ public:
+  Owner() : ptr_(nullptr) {}
+  Owner(T* ptr) : ptr_(ptr) {}
+
+  void reset(T* ptr) {
+    ptr_->release();
+    ptr_ = ptr;
+  }
+
+  T* get() { return ptr_; }
+
+  ~Owner() { reset(nullptr); }
+
+ private:
+  T* ptr_;
+};
+
+template <typename T>
+class OwnerXPtr : public external_pointer<Owner<T>> {
+ public:
+  OwnerXPtr(T* ptr) : external_pointer<Owner<T>>(new Owner<T>(ptr)) {
+    sexp xptr_sexp = (SEXP)(*this);
+    xptr_sexp.attr("class") = owner_xptr_classname<T>();
+  }
+
+  OwnerXPtr(sexp xptr) : external_pointer<Owner<T>>(xptr) {
+    if (!Rf_inherits(xptr, owner_xptr_classname<T>())) {
+      stop("external pointer does not inherit from '%s'", owner_xptr_classname<T>());
+    }
+  }
+};
+
 using DeviceXPtr = OwnerXPtr<MTL::Device>;
 using LibraryXPtr = OwnerXPtr<MTL::Library>;
 using FunctionXptr = OwnerXPtr<MTL::Function>;
@@ -85,7 +96,7 @@ using BufferXptr = OwnerXPtr<MTL::Buffer>;
     stop("No default device found");
   }
 
-  DeviceXPtr device(default_device->retain());
+  DeviceXPtr device(default_device);
   return (SEXP)device;
 }
 
@@ -176,6 +187,50 @@ using BufferXptr = OwnerXPtr<MTL::Buffer>;
   return out;
 }
 
+static std::unordered_map<const void*, SEXP> buffer_shelter;
+
+[[cpp11::register]] sexp cpp_buffer(sexp device_sexp, sexp x) {
+  const void* ptr = nullptr;
+  NS::UInteger size = 0;
+  R_xlen_t length = Rf_xlength(x);
+
+  switch (TYPEOF(x)) {
+    case NILSXP:
+      break;
+    case INTSXP:
+      ptr = INTEGER(x);
+      size = length * sizeof(int);
+      break;
+    default:
+      stop("Can't create buffer from `x`");
+  }
+
+  DeviceXPtr device_xptr(device_sexp);
+  if (ptr != nullptr) {
+    Rprintf("preserving shelter for %p [%d]\n", ptr, (int)size);
+    buffer_shelter[ptr] = preserved.insert(x);
+  }
+  MTL::Buffer* buffer = device_xptr->get()->newBuffer(
+      ptr, size, MTL::ResourceStorageModeShared, ^(void* ptr, NS::UInteger size) {
+        if (ptr == nullptr) {
+          return;
+        }
+
+        preserved.release(buffer_shelter[ptr]);
+        buffer_shelter.erase(ptr);
+        Rprintf("calling the buffer deallocator for %p\n", ptr);
+      });
+
+  if (buffer == nullptr) {
+    preserved.release(buffer_shelter[ptr]);
+    buffer_shelter.erase(ptr);
+    stop("Failed to create buffer");
+  }
+
+  BufferXptr buffer_xptr(buffer);
+  return (SEXP)buffer_xptr;
+}
+
 [[cpp11::register]] sexp cpp_command_queue(sexp device_sexp) {
   DeviceXPtr device_xptr(device_sexp);
   CommandQueueXptr command_queue_xptr(device_xptr->get()->newCommandQueue());
@@ -195,15 +250,6 @@ using BufferXptr = OwnerXPtr<MTL::Buffer>;
 
   ComputePipelineXptr pipeline_xptr(pipeline);
   return (SEXP)pipeline_xptr;
-}
-
-[[cpp11::register]] sexp cpp_buffer(sexp device_sexp, sexp object) {
-  DeviceXPtr device_xptr(device_sexp);
-  // TOOD: buffer from R object using
-  // MTL::Buffer* buffer = device_xptr->get()->newBuffer(pointer, length, options, deallocator);
-  //BufferXptr buffer_xptr(buffer);
-  //return (SEXP)buffer_xptr;
-  return R_NilValue;
 }
 
 [[cpp11::register]] void cpp_compute_pipeline_execute(sexp pipeline_sexp,

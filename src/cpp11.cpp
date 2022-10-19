@@ -83,6 +83,13 @@ extern "C" SEXP _metal_cpp_function_info(SEXP function_sexp) {
   END_CPP11
 }
 // metal.cpp
+sexp cpp_buffer(sexp device_sexp, sexp x);
+extern "C" SEXP _metal_cpp_buffer(SEXP device_sexp, SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_buffer(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(x)));
+  END_CPP11
+}
+// metal.cpp
 sexp cpp_command_queue(sexp device_sexp);
 extern "C" SEXP _metal_cpp_command_queue(SEXP device_sexp) {
   BEGIN_CPP11
@@ -94,13 +101,6 @@ sexp cpp_compute_pipeline(sexp function_sexp);
 extern "C" SEXP _metal_cpp_compute_pipeline(SEXP function_sexp) {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_compute_pipeline(cpp11::as_cpp<cpp11::decay_t<sexp>>(function_sexp)));
-  END_CPP11
-}
-// metal.cpp
-sexp cpp_buffer(sexp device_sexp, sexp object);
-extern "C" SEXP _metal_cpp_buffer(SEXP device_sexp, SEXP object) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(cpp_buffer(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(object)));
   END_CPP11
 }
 // metal.cpp
