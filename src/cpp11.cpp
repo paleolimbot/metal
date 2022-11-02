@@ -83,10 +83,39 @@ extern "C" SEXP _metal_cpp_function_info(SEXP function_sexp) {
   END_CPP11
 }
 // metal.cpp
-sexp cpp_buffer(sexp device_sexp, sexp x);
-extern "C" SEXP _metal_cpp_buffer(SEXP device_sexp, SEXP x) {
+sexp cpp_buffer(sexp device_sexp, double size_dbl);
+extern "C" SEXP _metal_cpp_buffer(SEXP device_sexp, SEXP size_dbl) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_buffer(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(x)));
+    return cpp11::as_sexp(cpp_buffer(cpp11::as_cpp<cpp11::decay_t<sexp>>(device_sexp), cpp11::as_cpp<cpp11::decay_t<double>>(size_dbl)));
+  END_CPP11
+}
+// metal.cpp
+double cpp_buffer_size(sexp buffer_sexp);
+extern "C" SEXP _metal_cpp_buffer_size(SEXP buffer_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_buffer_size(cpp11::as_cpp<cpp11::decay_t<sexp>>(buffer_sexp)));
+  END_CPP11
+}
+// metal.cpp
+void cpp_buffer_copy_from(sexp src_sexp, sexp buffer_sexp, double src_offset, double buffer_offset, double length);
+extern "C" SEXP _metal_cpp_buffer_copy_from(SEXP src_sexp, SEXP buffer_sexp, SEXP src_offset, SEXP buffer_offset, SEXP length) {
+  BEGIN_CPP11
+    cpp_buffer_copy_from(cpp11::as_cpp<cpp11::decay_t<sexp>>(src_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(buffer_sexp), cpp11::as_cpp<cpp11::decay_t<double>>(src_offset), cpp11::as_cpp<cpp11::decay_t<double>>(buffer_offset), cpp11::as_cpp<cpp11::decay_t<double>>(length));
+    return R_NilValue;
+  END_CPP11
+}
+// metal.cpp
+sexp cpp_buffer_copy_to(sexp buffer_sexp, sexp ptype, double buffer_offset, double length);
+extern "C" SEXP _metal_cpp_buffer_copy_to(SEXP buffer_sexp, SEXP ptype, SEXP buffer_offset, SEXP length) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_buffer_copy_to(cpp11::as_cpp<cpp11::decay_t<sexp>>(buffer_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(ptype), cpp11::as_cpp<cpp11::decay_t<double>>(buffer_offset), cpp11::as_cpp<cpp11::decay_t<double>>(length)));
+  END_CPP11
+}
+// metal.cpp
+sexp cpp_buffer_pointer(sexp buffer_sexp);
+extern "C" SEXP _metal_cpp_buffer_pointer(SEXP buffer_sexp) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_buffer_pointer(cpp11::as_cpp<cpp11::decay_t<sexp>>(buffer_sexp)));
   END_CPP11
 }
 // metal.cpp
@@ -116,6 +145,10 @@ extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_metal_cpp_as_floats",                (DL_FUNC) &_metal_cpp_as_floats,                1},
     {"_metal_cpp_buffer",                   (DL_FUNC) &_metal_cpp_buffer,                   2},
+    {"_metal_cpp_buffer_copy_from",         (DL_FUNC) &_metal_cpp_buffer_copy_from,         5},
+    {"_metal_cpp_buffer_copy_to",           (DL_FUNC) &_metal_cpp_buffer_copy_to,           4},
+    {"_metal_cpp_buffer_pointer",           (DL_FUNC) &_metal_cpp_buffer_pointer,           1},
+    {"_metal_cpp_buffer_size",              (DL_FUNC) &_metal_cpp_buffer_size,              1},
     {"_metal_cpp_command_queue",            (DL_FUNC) &_metal_cpp_command_queue,            1},
     {"_metal_cpp_compute_pipeline",         (DL_FUNC) &_metal_cpp_compute_pipeline,         1},
     {"_metal_cpp_compute_pipeline_execute", (DL_FUNC) &_metal_cpp_compute_pipeline_execute, 3},

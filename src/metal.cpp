@@ -189,37 +189,13 @@ using BufferXptr = OwnerXPtr<MTL::Buffer>;
 
 static std::unordered_map<const void*, SEXP> buffer_shelter;
 
-[[cpp11::register]] sexp cpp_buffer(sexp device_sexp, sexp x) {
+[[cpp11::register]] sexp cpp_buffer(sexp device_sexp, double size_dbl) {
   const void* ptr = nullptr;
-  NS::UInteger size = 0;
-  R_xlen_t length = Rf_xlength(x);
-
-  switch (TYPEOF(x)) {
-    case NILSXP:
-      break;
-    case INTSXP:
-      ptr = INTEGER(x);
-      size = length * sizeof(int);
-      break;
-    default:
-      stop("Can't create buffer from `x`");
-  }
+  NS::UInteger size = size_dbl;
 
   DeviceXPtr device_xptr(device_sexp);
-  if (ptr != nullptr) {
-    Rprintf("preserving shelter for %p [%d]\n", ptr, (int)size);
-    buffer_shelter[ptr] = preserved.insert(x);
-  }
-  MTL::Buffer* buffer = device_xptr->get()->newBuffer(
-      ptr, size, MTL::ResourceStorageModeShared, ^(void* ptr, NS::UInteger size) {
-        if (ptr == nullptr) {
-          return;
-        }
-
-        preserved.release(buffer_shelter[ptr]);
-        buffer_shelter.erase(ptr);
-        Rprintf("calling the buffer deallocator for %p\n", ptr);
-      });
+  MTL::Buffer* buffer =
+      device_xptr->get()->newBuffer(size, MTL::ResourceStorageModeShared);
 
   if (buffer == nullptr) {
     preserved.release(buffer_shelter[ptr]);
@@ -229,6 +205,108 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
 
   BufferXptr buffer_xptr(buffer);
   return (SEXP)buffer_xptr;
+}
+
+[[cpp11::register]] double cpp_buffer_size(sexp buffer_sexp) {
+  BufferXptr buffer_xptr(buffer_sexp);
+  return buffer_xptr->get()->length();
+}
+
+[[cpp11::register]] void cpp_buffer_copy_from(sexp src_sexp, sexp buffer_sexp,
+                                              double src_offset, double buffer_offset,
+                                              double length) {
+  if (length == 0) {
+    return;
+  }
+
+  if (src_offset < 0 || buffer_offset < 0) {
+    stop("Invalid src_offset or buffer offset");
+  }
+
+  R_xlen_t r_length = Rf_xlength(src_sexp);
+  R_xlen_t min_size = src_offset + length;
+  R_xlen_t actual_size;
+  switch (TYPEOF(src_sexp)) {
+    case INTSXP:
+    case LGLSXP:
+      actual_size = r_length * sizeof(int);
+      break;
+    case REALSXP:
+      actual_size = r_length * sizeof(double);
+      break;
+    case RAWSXP:
+      actual_size = r_length;
+    default:
+      stop("Vector type not supported for src");
+  }
+
+  if (actual_size < min_size) {
+    stop("Vector not long enough for specified arguments");
+  }
+
+  BufferXptr buffer_xptr(buffer_sexp);
+
+  if ((buffer_offset + length) > buffer_xptr->get()->length()) {
+    stop("Buffer not long enough for specified arguments");
+  }
+
+  auto src = reinterpret_cast<const uint8_t*>(DATAPTR_RO(src_sexp));
+  auto dst = reinterpret_cast<uint8_t*>(buffer_xptr->get()->contents());
+  int64_t buffer_offset_int = buffer_offset;
+  int64_t src_offset_int = buffer_offset;
+  memcpy(dst + buffer_offset_int, src + src_offset_int, length);
+}
+
+[[cpp11::register]] sexp cpp_buffer_copy_to(sexp buffer_sexp, sexp ptype,
+                                            double buffer_offset, double length) {
+  BufferXptr buffer_xptr(buffer_sexp);
+  if (buffer_offset < 0) {
+    stop("Invalid buffer offset argument");
+  }
+
+  if ((buffer_offset + length) > buffer_xptr->get()->length()) {
+    stop("Buffer not long enough for specified arguments");
+  }
+
+  sexp result_sexp;
+  R_xlen_t actual_size;
+  switch (TYPEOF(ptype)) {
+    case INTSXP:
+      result_sexp = writable::integers((R_xlen_t)length / 4);
+      actual_size = Rf_xlength(result_sexp) * 4;
+      break;
+    case LGLSXP:
+      result_sexp = writable::logicals((R_xlen_t)length / 4);
+      actual_size = Rf_xlength(result_sexp) * 4;
+      break;
+    case REALSXP:
+      result_sexp = writable::doubles((R_xlen_t)length / 8);
+      actual_size = Rf_xlength(result_sexp) * 8;
+      break;
+    case RAWSXP:
+      result_sexp = writable::raws((R_xlen_t)length);
+      actual_size = length;
+      break;
+    default:
+      stop("Vector type not supported for ptype");
+  }
+
+  if (actual_size != length) {
+    stop("Length must be a multiple of vector element size");
+  }
+
+  auto src = reinterpret_cast<uint8_t*>(buffer_xptr->get()->contents());
+  auto dst = reinterpret_cast<uint8_t*>(DATAPTR(result_sexp));
+  int64_t buffer_offset_int = buffer_offset;
+  memcpy(dst, src + buffer_offset_int, length);
+  return result_sexp;
+}
+
+[[cpp11::register]] sexp cpp_buffer_pointer(sexp buffer_sexp) {
+  BufferXptr buffer_xptr(buffer_sexp);
+  sexp length_sexp = safe[Rf_ScalarReal](buffer_xptr->get()->length());
+  return safe[R_MakeExternalPtr](buffer_xptr->get()->contents(), length_sexp,
+                                 buffer_sexp);
 }
 
 [[cpp11::register]] sexp cpp_command_queue(sexp device_sexp) {

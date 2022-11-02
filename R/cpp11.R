@@ -44,8 +44,24 @@ cpp_function_info <- function(function_sexp) {
   .Call(`_metal_cpp_function_info`, function_sexp)
 }
 
-cpp_buffer <- function(device_sexp, x) {
-  .Call(`_metal_cpp_buffer`, device_sexp, x)
+cpp_buffer <- function(device_sexp, size_dbl) {
+  .Call(`_metal_cpp_buffer`, device_sexp, size_dbl)
+}
+
+cpp_buffer_size <- function(buffer_sexp) {
+  .Call(`_metal_cpp_buffer_size`, buffer_sexp)
+}
+
+cpp_buffer_copy_from <- function(src_sexp, buffer_sexp, src_offset, buffer_offset, length) {
+  invisible(.Call(`_metal_cpp_buffer_copy_from`, src_sexp, buffer_sexp, src_offset, buffer_offset, length))
+}
+
+cpp_buffer_copy_to <- function(buffer_sexp, ptype, buffer_offset, length) {
+  .Call(`_metal_cpp_buffer_copy_to`, buffer_sexp, ptype, buffer_offset, length)
+}
+
+cpp_buffer_pointer <- function(buffer_sexp) {
+  .Call(`_metal_cpp_buffer_pointer`, buffer_sexp)
 }
 
 cpp_command_queue <- function(device_sexp) {
