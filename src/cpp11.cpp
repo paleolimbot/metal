@@ -105,10 +105,10 @@ extern "C" SEXP _metal_cpp_buffer_copy_from(SEXP src_sexp, SEXP buffer_sexp, SEX
   END_CPP11
 }
 // metal.cpp
-sexp cpp_buffer_copy_to(sexp buffer_sexp, sexp ptype, double buffer_offset, double length);
-extern "C" SEXP _metal_cpp_buffer_copy_to(SEXP buffer_sexp, SEXP ptype, SEXP buffer_offset, SEXP length) {
+sexp cpp_buffer_copy_into(sexp buffer_sexp, sexp ptype, double buffer_offset, double length);
+extern "C" SEXP _metal_cpp_buffer_copy_into(SEXP buffer_sexp, SEXP ptype, SEXP buffer_offset, SEXP length) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_buffer_copy_to(cpp11::as_cpp<cpp11::decay_t<sexp>>(buffer_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(ptype), cpp11::as_cpp<cpp11::decay_t<double>>(buffer_offset), cpp11::as_cpp<cpp11::decay_t<double>>(length)));
+    return cpp11::as_sexp(cpp_buffer_copy_into(cpp11::as_cpp<cpp11::decay_t<sexp>>(buffer_sexp), cpp11::as_cpp<cpp11::decay_t<sexp>>(ptype), cpp11::as_cpp<cpp11::decay_t<double>>(buffer_offset), cpp11::as_cpp<cpp11::decay_t<double>>(length)));
   END_CPP11
 }
 // metal.cpp
@@ -146,7 +146,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metal_cpp_as_floats",                (DL_FUNC) &_metal_cpp_as_floats,                1},
     {"_metal_cpp_buffer",                   (DL_FUNC) &_metal_cpp_buffer,                   2},
     {"_metal_cpp_buffer_copy_from",         (DL_FUNC) &_metal_cpp_buffer_copy_from,         5},
-    {"_metal_cpp_buffer_copy_to",           (DL_FUNC) &_metal_cpp_buffer_copy_to,           4},
+    {"_metal_cpp_buffer_copy_into",         (DL_FUNC) &_metal_cpp_buffer_copy_into,         4},
     {"_metal_cpp_buffer_pointer",           (DL_FUNC) &_metal_cpp_buffer_pointer,           1},
     {"_metal_cpp_buffer_size",              (DL_FUNC) &_metal_cpp_buffer_size,              1},
     {"_metal_cpp_command_queue",            (DL_FUNC) &_metal_cpp_command_queue,            1},

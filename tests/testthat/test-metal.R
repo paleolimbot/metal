@@ -43,3 +43,54 @@ test_that("mtl_make_library() creates a library for valid code", {
   # check that this function compiles
   expect_s3_class(mtl_compute_pipeline(lib$add_arrays), "mtl_compute_pipeline")
 })
+
+test_that("mtl_buffer() creates buffers", {
+  buffer <- mtl_buffer(100)
+  expect_identical(mtl_buffer_size(buffer), 100)
+  expect_s3_class(buffer, "mtl_buffer")
+  expect_s3_class(buffer, "mtl_buffer_uint8")
+
+  mtl_copy_into_buffer(as.raw(1:100), buffer)
+  expect_identical(
+    mtl_buffer_slice(buffer),
+    as.raw(1:100)
+  )
+
+  mtl_copy_into_buffer(
+    as.raw(1:100),
+    buffer,
+    src_offset = 5,
+    buffer_offset = 20,
+    size = 15
+  )
+
+  expect_identical(
+    mtl_buffer_slice(buffer, buffer_offset = 20, size = 15),
+    as.raw(6:(6 + 15 - 1))
+  )
+
+  expect_error(
+    mtl_copy_into_buffer(as.raw(1:100), buffer, src_offset = -1),
+    "Invalid src_offset or buffer offset"
+  )
+
+  expect_error(
+    mtl_copy_into_buffer(as.raw(1:100), buffer, buffer_offset = -1),
+    "Invalid src_offset or buffer offset"
+  )
+
+  expect_error(
+    mtl_copy_into_buffer(as.raw(1:100), buffer, src_offset = -1),
+    "Invalid src_offset or buffer offset"
+  )
+
+  expect_error(
+    mtl_copy_into_buffer(as.raw(1:100), buffer, src_offset = 10, size = 91),
+    "Vector not long enough for specified arguments"
+  )
+
+  expect_error(
+    mtl_copy_into_buffer(as.raw(1:100), buffer, buffer_offset = 10, size = 91),
+    "Buffer not long enough for specified arguments"
+  )
+})

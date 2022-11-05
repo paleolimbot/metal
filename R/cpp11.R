@@ -56,8 +56,8 @@ cpp_buffer_copy_from <- function(src_sexp, buffer_sexp, src_offset, buffer_offse
   invisible(.Call(`_metal_cpp_buffer_copy_from`, src_sexp, buffer_sexp, src_offset, buffer_offset, length))
 }
 
-cpp_buffer_copy_to <- function(buffer_sexp, ptype, buffer_offset, length) {
-  .Call(`_metal_cpp_buffer_copy_to`, buffer_sexp, ptype, buffer_offset, length)
+cpp_buffer_copy_into <- function(buffer_sexp, ptype, buffer_offset, length) {
+  .Call(`_metal_cpp_buffer_copy_into`, buffer_sexp, ptype, buffer_offset, length)
 }
 
 cpp_buffer_pointer <- function(buffer_sexp) {

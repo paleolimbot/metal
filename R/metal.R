@@ -87,7 +87,9 @@ print.mtl_library <- function(x, ...) {
 
 #' Create buffers
 #'
-#' @param size The size of the buffer in bytes
+#' @param buffer An [mtl_buffer()]
+#' @param size A size of the buffer or part of the buffer in bytes
+#' @param src_offset,buffer_offset Offsets into the sour
 #' @inheritParams mtl_make_library
 #' @param ... Passed to S3 methods
 #'
@@ -97,8 +99,12 @@ print.mtl_library <- function(x, ...) {
 #' @examples
 #' mtl_buffer(1024)
 #'
-mtl_buffer <- function(size, device = mtl_default_device()) {
-  cpp_buffer(device, size)
+mtl_buffer <- function(size, device = mtl_default_device(),
+                       buffer_type = c("uint8", "float", "int32", "double")) {
+  buffer_type <- match.arg(buffer_type)
+  buffer <- cpp_buffer(device, size)
+  class(buffer) <- c(paste0("mtl_buffer_", buffer_type), class(buffer))
+  buffer
 }
 
 mtl_buffer_size <- function(buffer) {
@@ -113,16 +119,17 @@ mtl_copy_into_buffer <- function(x, buffer, src_offset = 0L, buffer_offset = 0L,
       "integer" = ,
       "logical" = 4L * length(x),
       "double" = 8L * length(x),
-      "raw" = length(x)
+      "raw" = length(x),
+      stop("Can't guess size of `x`")
     )
   }
 
-  cpp_bufer_copy_into(buffer, x, src_offset, buffer_offset, size)
+  cpp_buffer_copy_from(x, buffer, src_offset, buffer_offset, size)
 }
 
 mtl_buffer_slice <- function(buffer, x = raw(), buffer_offset = 0L,
-                             size = mtl_buffer_size()) {
-  cpp_buffer_copy_from(buffer, x, buffer_offset, size)
+                             size = mtl_buffer_size(buffer)) {
+  cpp_buffer_copy_into(buffer, x, buffer_offset, size)
 }
 
 

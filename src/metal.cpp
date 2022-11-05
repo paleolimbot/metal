@@ -236,6 +236,7 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
       break;
     case RAWSXP:
       actual_size = r_length;
+      break;
     default:
       stop("Vector type not supported for src");
   }
@@ -253,12 +254,12 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
   auto src = reinterpret_cast<const uint8_t*>(DATAPTR_RO(src_sexp));
   auto dst = reinterpret_cast<uint8_t*>(buffer_xptr->get()->contents());
   int64_t buffer_offset_int = buffer_offset;
-  int64_t src_offset_int = buffer_offset;
+  int64_t src_offset_int = src_offset;
   memcpy(dst + buffer_offset_int, src + src_offset_int, length);
 }
 
-[[cpp11::register]] sexp cpp_buffer_copy_to(sexp buffer_sexp, sexp ptype,
-                                            double buffer_offset, double length) {
+[[cpp11::register]] sexp cpp_buffer_copy_into(sexp buffer_sexp, sexp ptype,
+                                              double buffer_offset, double length) {
   BufferXptr buffer_xptr(buffer_sexp);
   if (buffer_offset < 0) {
     stop("Invalid buffer offset argument");
