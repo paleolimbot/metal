@@ -225,20 +225,28 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
 
   R_xlen_t r_length = Rf_xlength(src_sexp);
   R_xlen_t min_size = src_offset + length;
+  R_xlen_t element_size;
   R_xlen_t actual_size;
   switch (TYPEOF(src_sexp)) {
     case INTSXP:
     case LGLSXP:
+      element_size = sizeof(int);
       actual_size = r_length * sizeof(int);
       break;
     case REALSXP:
+      element_size = sizeof(double);
       actual_size = r_length * sizeof(double);
       break;
     case RAWSXP:
+      element_size = sizeof(unsigned char);
       actual_size = r_length;
       break;
     default:
       stop("Vector type not supported for src");
+  }
+
+  if ((((R_xlen_t)length) % element_size) != 0) {
+    stop("Length must be a multiple of vector element size");
   }
 
   if (actual_size < min_size) {

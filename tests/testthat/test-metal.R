@@ -68,6 +68,10 @@ test_that("mtl_buffer() creates buffers", {
     mtl_buffer_slice(buffer, buffer_offset = 20, size = 15),
     as.raw(6:(6 + 15 - 1))
   )
+})
+
+test_that("mtl_buffer() functions error for invalid params", {
+  buffer <- mtl_buffer(100)
 
   expect_error(
     mtl_copy_into_buffer(as.raw(1:100), buffer, src_offset = -1),
@@ -92,5 +96,30 @@ test_that("mtl_buffer() creates buffers", {
   expect_error(
     mtl_copy_into_buffer(as.raw(1:100), buffer, buffer_offset = 10, size = 91),
     "Buffer not long enough for specified arguments"
+  )
+
+  expect_error(
+    mtl_copy_into_buffer(as.integer(1:5), buffer, size = 3),
+    "Length must be a multiple of vector element size"
+  )
+
+  expect_error(
+    mtl_buffer_slice(buffer, buffer_offset = -1),
+    "Invalid buffer offset argument"
+  )
+
+  expect_error(
+    mtl_buffer_slice(buffer, buffer_offset = 1, size = 100),
+    "Buffer not long enough for specified arguments"
+  )
+
+  expect_error(
+    mtl_buffer_slice(buffer, environment()),
+    "Vector type not supported for ptype"
+  )
+
+  expect_error(
+    mtl_buffer_slice(buffer, integer(), size = 3),
+    "Length must be a multiple of vector element size"
   )
 })
