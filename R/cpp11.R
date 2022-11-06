@@ -72,6 +72,6 @@ cpp_compute_pipeline <- function(function_sexp) {
   .Call(`_metal_cpp_compute_pipeline`, function_sexp)
 }
 
-cpp_compute_pipeline_execute <- function(pipeline_sexp, commmand_queue_sexp, args) {
-  invisible(.Call(`_metal_cpp_compute_pipeline_execute`, pipeline_sexp, commmand_queue_sexp, args))
+cpp_compute_pipeline_execute <- function(pipeline_sexp, commmand_queue_sexp, args, array_length_dbl) {
+  invisible(.Call(`_metal_cpp_compute_pipeline_execute`, pipeline_sexp, commmand_queue_sexp, args, array_length_dbl))
 }

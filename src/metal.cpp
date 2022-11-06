@@ -341,7 +341,8 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
 
 [[cpp11::register]] void cpp_compute_pipeline_execute(sexp pipeline_sexp,
                                                       sexp commmand_queue_sexp,
-                                                      list args) {
+                                                      list args,
+                                                      double array_length_dbl) {
   ComputePipelineXptr pipeline_xptr(pipeline_sexp);
   CommandQueueXptr command_queue_xptr(commmand_queue_sexp);
 
@@ -359,7 +360,7 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
     command_encoder->setBuffer(buffer_xptr->get(), 0, i);
   }
 
-  NS::UInteger array_length = 1;
+  NS::UInteger array_length = array_length_dbl;
   MTL::Size grid_size = MTL::Size::Make(array_length, 1, 1);
   NS::UInteger thread_group_size_n =
       pipeline_xptr->get()->maxTotalThreadsPerThreadgroup();

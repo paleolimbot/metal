@@ -48,7 +48,7 @@ test_that("mtl_make_library() creates a library for valid code", {
   result <- mtl_buffer(123, buffer_type = "float")
   in_a <- as_mtl_floats(1:123)
   in_b <- as_mtl_floats(rep(2, 123))
-  mtl_compute_pipeline_execute(pipeline, in_a, in_b, result)
+  mtl_compute_pipeline_execute(pipeline, 123, in_a, in_b, result)
   result_floats <- mtl_buffer_convert(result)
   expect_identical(result_floats, as_mtl_floats(1:123 + 2))
 })

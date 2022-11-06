@@ -86,6 +86,8 @@ print.mtl_library <- function(x, ...) {
 #' Compile and execute compute functions
 #'
 #' @param func An mtl_function
+#' @param length The array length to execute across (used to create the grid
+#'   of threads)
 #' @inheritParams mtl_make_library
 #' @param pipeline A pipeline created with [mtl_compute_pipeline()]
 #' @param ... Arguments (currently all [mtl_buffer()]s) or objects that
@@ -104,10 +106,10 @@ mtl_compute_pipeline <- function(func) {
 
 #' @rdname mtl_compute_pipeline
 #' @export
-mtl_compute_pipeline_execute <- function(pipeline, ..., device = mtl_default_device()) {
+mtl_compute_pipeline_execute <- function(pipeline, length, ..., device = mtl_default_device()) {
   args <- lapply(list(...), as_mtl_buffer)
   queue <- cpp_command_queue(device)
-  cpp_compute_pipeline_execute(pipeline, queue, args)
+  cpp_compute_pipeline_execute(pipeline, queue, args, length)
 }
 
 #' Create Metal buffers

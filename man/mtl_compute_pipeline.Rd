@@ -7,12 +7,20 @@
 \usage{
 mtl_compute_pipeline(func)
 
-mtl_compute_pipeline_execute(pipeline, ..., device = mtl_default_device())
+mtl_compute_pipeline_execute(
+  pipeline,
+  length,
+  ...,
+  device = mtl_default_device()
+)
 }
 \arguments{
 \item{func}{An mtl_function}
 
 \item{pipeline}{A pipeline created with \code{\link[=mtl_compute_pipeline]{mtl_compute_pipeline()}}}
+
+\item{length}{The array length to execute across (used to create the grid
+of threads)}
 
 \item{...}{Arguments (currently all \code{\link[=mtl_buffer]{mtl_buffer()}}s) or objects that
 will be coerced to them.}
