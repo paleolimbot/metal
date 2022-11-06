@@ -3,7 +3,9 @@
 \name{mtl_buffer}
 \alias{mtl_buffer}
 \alias{as_mtl_buffer}
+\alias{as_mtl_buffer.mtl_buffer}
 \alias{as_mtl_buffer.integer}
+\alias{as_mtl_buffer.logical}
 \alias{as_mtl_buffer.double}
 \alias{as_mtl_buffer.mtl_floats}
 \alias{as_mtl_buffer.raw}
@@ -14,14 +16,18 @@
 \title{Create Metal buffers}
 \usage{
 mtl_buffer(
-  size,
+  length,
   device = mtl_default_device(),
   buffer_type = c("uint8", "float", "int32", "double")
 )
 
 as_mtl_buffer(x, ...)
 
+\method{as_mtl_buffer}{mtl_buffer}(x, ...)
+
 \method{as_mtl_buffer}{integer}(x, ...)
+
+\method{as_mtl_buffer}{logical}(x, ...)
 
 \method{as_mtl_buffer}{double}(x, ...)
 
@@ -49,8 +55,6 @@ mtl_buffer_slice(
 )
 }
 \arguments{
-\item{size}{A size of the buffer or part of the buffer in bytes}
-
 \item{device}{A \link[=mtl_default_device]{mtl_device}}
 
 \item{buffer_type}{A logical type for the buffer}
@@ -64,6 +68,8 @@ mtl_buffer_slice(
 \item{start, length}{A slice of the buffer to resolve into an R vectors}
 
 \item{src_offset, buffer_offset}{Offsets into the buffer (zero-based)}
+
+\item{size}{A size of the buffer or part of the buffer in bytes}
 }
 \value{
 An object of class 'mtl_buffer'

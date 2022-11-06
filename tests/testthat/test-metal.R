@@ -42,6 +42,15 @@ test_that("mtl_make_library() creates a library for valid code", {
 
   # check that this function compiles
   expect_s3_class(mtl_compute_pipeline(lib$add_arrays), "mtl_compute_pipeline")
+
+  # check that it can execute at least once
+  pipeline <- mtl_compute_pipeline(lib$add_arrays)
+  result <- mtl_buffer(123, buffer_type = "float")
+  in_a <- as_mtl_floats(1:123)
+  in_b <- as_mtl_floats(rep(2, 123))
+  mtl_compute_pipeline_execute(pipeline, in_a, in_b, result)
+  result_floats <- mtl_buffer_convert(result)
+  expect_identical(result_floats, as_mtl_floats(1:123 + 2))
 })
 
 test_that("mtl_buffer() creates buffers", {

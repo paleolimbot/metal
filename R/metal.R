@@ -83,6 +83,32 @@ print.mtl_library <- function(x, ...) {
   invisible(x)
 }
 
+#' Compile and execute compute functions
+#'
+#' @param func An mtl_function
+#' @inheritParams mtl_make_library
+#' @param pipeline A pipeline created with [mtl_compute_pipeline()]
+#' @param ... Arguments (currently all [mtl_buffer()]s) or objects that
+#'   will be coerced to them.
+#'
+#' @return
+#'   - `mtl_compute_pipeline()` returns an mtl_compute_pipline object representing
+#'     a compiled version of the function for the device's GPU.
+#'   - `mtl_compute_pipeline_execute()` returns nothing (usually the function
+#'     populates an output buffer that is one of the arguments).
+#' @export
+#'
+mtl_compute_pipeline <- function(func) {
+  cpp_compute_pipeline(func)
+}
+
+#' @rdname mtl_compute_pipeline
+#' @export
+mtl_compute_pipeline_execute <- function(pipeline, ..., device = mtl_default_device()) {
+  args <- lapply(list(...), as_mtl_buffer)
+  queue <- cpp_command_queue(device)
+  cpp_compute_pipeline_execute(pipeline, queue, args)
+}
 
 #' Create Metal buffers
 #'
@@ -105,9 +131,17 @@ print.mtl_library <- function(x, ...) {
 #' @examples
 #' as_mtl_buffer(1:5)
 #'
-mtl_buffer <- function(size, device = mtl_default_device(),
+mtl_buffer <- function(length, device = mtl_default_device(),
                        buffer_type = c("uint8", "float", "int32", "double")) {
   buffer_type <- match.arg(buffer_type)
+  size <- switch(
+    buffer_type,
+    "float" = ,
+    "int32" = 4L * length,
+    "double" = 8L * length,
+    length
+  )
+
   buffer <- cpp_buffer(device, size)
   class(buffer) <- c(paste0("mtl_buffer_", buffer_type), class(buffer))
   buffer
@@ -121,8 +155,22 @@ as_mtl_buffer <- function(x, ...) {
 
 #' @rdname mtl_buffer
 #' @export
+as_mtl_buffer.mtl_buffer <- function(x, ...) {
+  x
+}
+
+#' @rdname mtl_buffer
+#' @export
 as_mtl_buffer.integer <- function(x, ...) {
-  buffer <- mtl_buffer(length(x) * 4L, buffer_type = "int32")
+  buffer <- mtl_buffer(length(x), buffer_type = "int32")
+  mtl_copy_into_buffer(x, buffer)
+  buffer
+}
+
+#' @rdname mtl_buffer
+#' @export
+as_mtl_buffer.logical <- function(x, ...) {
+  buffer <- mtl_buffer(length(x), buffer_type = "int32")
   mtl_copy_into_buffer(x, buffer)
   buffer
 }
@@ -130,7 +178,7 @@ as_mtl_buffer.integer <- function(x, ...) {
 #' @rdname mtl_buffer
 #' @export
 as_mtl_buffer.double <- function(x, ...) {
-  buffer <- mtl_buffer(length(x) * 8L, buffer_type = "double")
+  buffer <- mtl_buffer(length(x), buffer_type = "double")
   mtl_copy_into_buffer(x, buffer)
   buffer
 }
@@ -138,7 +186,7 @@ as_mtl_buffer.double <- function(x, ...) {
 #' @rdname mtl_buffer
 #' @export
 as_mtl_buffer.mtl_floats <- function(x, ...) {
-  buffer <- mtl_buffer(length(x) * 4L, buffer_type = "float")
+  buffer <- mtl_buffer(length(x), buffer_type = "float")
   mtl_copy_into_buffer(x, buffer)
   buffer
 }
@@ -230,8 +278,4 @@ str.mtl_buffer <- function(object, ...) {
   proxy <- mtl_buffer_convert(object, length = 100L)
   str(proxy, ...)
   invisible(object)
-}
-
-mtl_compute_pipeline <- function(func) {
-  cpp_compute_pipeline(func)
 }
