@@ -347,7 +347,9 @@ static std::unordered_map<const void*, SEXP> buffer_shelter;
   CommandQueueXptr command_queue_xptr(commmand_queue_sexp);
 
   MTL::CommandBuffer* command_buffer = command_queue_xptr->get()->commandBuffer();
+  Owner<MTL::CommandBuffer> command_buffer_owner(command_buffer);
   MTL::ComputeCommandEncoder* command_encoder = command_buffer->computeCommandEncoder();
+  Owner<MTL::ComputeCommandEncoder> command_encoder_owner(command_encoder);
   command_encoder->setComputePipelineState(pipeline_xptr->get());
 
   for (R_xlen_t i = 0; i < args.size(); i++) {
