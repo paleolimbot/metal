@@ -68,6 +68,21 @@ mtl_compute_pipeline_execute(pipeline, 123, in_a, in_b, result)
 mtl_buffer_convert(result)
 ```
 
+This is not necessarily faster for simple things (but probably is as the complexity of the expressions goes up):
+
+```{r}
+n <- 1e8
+big_dbls <- runif(n)
+big_floats <- as_mtl_floats(big_dbls)
+result <- mtl_buffer(n, buffer_type = "float")
+bench::mark(
+  gpu = mtl_compute_pipeline_execute(pipeline, n, big_floats, big_floats, result),
+  r = big_dbls + big_dbls,
+  check = FALSE
+)
+```
+
+
 ## Using the bundled metal-cpp
 
 The [metal-cpp C++ library](https://developer.apple.com/metal/cpp/) used by this package is a header-only library that you can access by `LinkingTo: metal` in another package, use `// [[Rcpp::depends(metal)]]` in Rcpp code, or `[[cpp11::linking_to(metal)]]` in cpp11 code. You'll need to set the C++ standard to C++17 or later and possibly add `-framework Metal` to your `PKG_LIBS` if you're writing a package.

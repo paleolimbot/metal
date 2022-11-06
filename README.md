@@ -39,7 +39,7 @@ library(metal)
 mtl_default_device()
 #> <mtl_device>
 #> - name: Apple M1
-#> - description: <AGXG13GDevice: 0x1502d6000>
+#> - description: <AGXG13GDevice: 0x11b8be600>
 #>     name = Apple M1
 ```
 
@@ -83,6 +83,26 @@ mtl_buffer_convert(result)
 #> [109] 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125
 ```
 
+This is not necessarily faster for simple things (but probably is as the
+complexity of the expressions goes up):
+
+``` r
+n <- 1e8
+big_dbls <- runif(n)
+big_floats <- as_mtl_floats(big_dbls)
+result <- mtl_buffer(n, buffer_type = "float")
+bench::mark(
+  gpu = mtl_compute_pipeline_execute(pipeline, n, big_floats, big_floats, result),
+  r = big_dbls + big_dbls,
+  check = FALSE
+)
+#> # A tibble: 2 × 6
+#>   expression      min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 gpu         106.8ms  108.3ms      8.57        0B      0  
+#> 2 r            72.7ms   76.2ms     13.1      763MB     26.2
+```
+
 ## Using the bundled metal-cpp
 
 The [metal-cpp C++ library](https://developer.apple.com/metal/cpp/) used
@@ -111,6 +131,6 @@ void print_default_device() {
 
 ``` r
 print_default_device()
-#> <AGXG13GDevice: 0x1502d6000>
+#> <AGXG13GDevice: 0x11b8be600>
 #>     name = Apple M1
 ```
