@@ -2,22 +2,72 @@
 % Please edit documentation in R/metal.R
 \name{mtl_buffer}
 \alias{mtl_buffer}
-\title{Create buffers}
+\alias{as_mtl_buffer}
+\alias{as_mtl_buffer.integer}
+\alias{as_mtl_buffer.double}
+\alias{as_mtl_buffer.mtl_floats}
+\alias{as_mtl_buffer.raw}
+\alias{mtl_buffer_convert}
+\alias{mtl_buffer_size}
+\alias{mtl_copy_into_buffer}
+\alias{mtl_buffer_slice}
+\title{Create Metal buffers}
 \usage{
-mtl_buffer(size, device = mtl_default_device())
+mtl_buffer(
+  size,
+  device = mtl_default_device(),
+  buffer_type = c("uint8", "float", "int32", "double")
+)
+
+as_mtl_buffer(x, ...)
+
+\method{as_mtl_buffer}{integer}(x, ...)
+
+\method{as_mtl_buffer}{double}(x, ...)
+
+\method{as_mtl_buffer}{mtl_floats}(x, ...)
+
+\method{as_mtl_buffer}{raw}(x, ...)
+
+mtl_buffer_convert(buffer, start = 0L, length = NULL)
+
+mtl_buffer_size(buffer)
+
+mtl_copy_into_buffer(
+  x,
+  buffer,
+  src_offset = 0L,
+  buffer_offset = 0L,
+  size = NULL
+)
+
+mtl_buffer_slice(
+  buffer,
+  x = raw(),
+  buffer_offset = 0L,
+  size = mtl_buffer_size(buffer)
+)
 }
 \arguments{
-\item{size}{The size of the buffer in bytes}
+\item{size}{A size of the buffer or part of the buffer in bytes}
 
 \item{device}{A \link[=mtl_default_device]{mtl_device}}
 
+\item{x}{An object to convert to an \code{\link[=mtl_buffer]{mtl_buffer()}}.}
+
 \item{...}{Passed to S3 methods}
+
+\item{buffer}{An \code{\link[=mtl_buffer]{mtl_buffer()}}}
+
+\item{src_offset, buffer_offset}{Offsets into the sour}
 }
 \value{
 An object of class 'mtl_buffer'
 }
 \description{
-Create buffers
+Allocates mutable buffers using Metal's allocation functions.
+These buffers have specific alignment that allow them to be shared
+between the GPU and CPU.
 }
 \examples{
 mtl_buffer(1024)

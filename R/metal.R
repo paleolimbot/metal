@@ -85,9 +85,14 @@ print.mtl_library <- function(x, ...) {
 }
 
 
-#' Create buffers
+#' Create Metal buffers
+#'
+#' Allocates mutable buffers using Metal's allocation functions.
+#' These buffers have specific alignment that allow them to be shared
+#' between the GPU and CPU.
 #'
 #' @param buffer An [mtl_buffer()]
+#' @param x An object to convert to an [mtl_buffer()].
 #' @param size A size of the buffer or part of the buffer in bytes
 #' @param src_offset,buffer_offset Offsets into the sour
 #' @inheritParams mtl_make_library
@@ -107,10 +112,84 @@ mtl_buffer <- function(size, device = mtl_default_device(),
   buffer
 }
 
+#' @rdname mtl_buffer
+#' @export
+as_mtl_buffer <- function(x, ...) {
+  UseMethod("as_mtl_buffer")
+}
+
+#' @rdname mtl_buffer
+#' @export
+as_mtl_buffer.integer <- function(x, ...) {
+  buffer <- mtl_buffer(length(x) * 4L, buffer_type = "int32")
+  mtl_copy_into_buffer(x, buffer)
+  buffer
+}
+
+#' @rdname mtl_buffer
+#' @export
+as_mtl_buffer.double <- function(x, ...) {
+  buffer <- mtl_buffer(length(x) * 8L, buffer_type = "double")
+  mtl_copy_into_buffer(x, buffer)
+  buffer
+}
+
+#' @rdname mtl_buffer
+#' @export
+as_mtl_buffer.mtl_floats <- function(x, ...) {
+  buffer <- mtl_buffer(length(x) * 4L, buffer_type = "float")
+  mtl_copy_into_buffer(x, buffer)
+  buffer
+}
+
+#' @rdname mtl_buffer
+#' @export
+as_mtl_buffer.raw <- function(x, ...) {
+  buffer <- mtl_buffer(length(x), buffer_type = "uint8")
+  mtl_copy_into_buffer(x, buffer)
+  buffer
+}
+
+#' @rdname mtl_buffer
+#' @export
+mtl_buffer_convert <- function(buffer, start = 0L, length = NULL) {
+  switch(
+    class(buffer)[1],
+    "mtl_buffer_float" = {
+      element_size <- 4L
+      ptype <- mtl_floats()
+    },
+    "mtl_buffer_int32" = {
+      element_size <- 4L
+      ptype <- integer()
+    },
+    "mtl_buffer_double" = {
+      element_size <- 8L
+      ptype <- double()
+    },
+    {
+      element_size <- 1L
+      ptype <- raw()
+    }
+  )
+
+  if (is.null(length)) {
+    length <- mtl_buffer_size(buffer) / element_size
+  }
+
+  start_raw <- start * element_size
+  length_raw <- length * element_size
+  mtl_buffer_slice(buffer, ptype, start_raw, length_raw)
+}
+
+#' @rdname mtl_buffer
+#' @export
 mtl_buffer_size <- function(buffer) {
   cpp_buffer_size(buffer)
 }
 
+#' @rdname mtl_buffer
+#' @export
 mtl_copy_into_buffer <- function(x, buffer, src_offset = 0L, buffer_offset = 0L,
                                  size = NULL) {
   if (is.null(size)) {
@@ -127,9 +206,13 @@ mtl_copy_into_buffer <- function(x, buffer, src_offset = 0L, buffer_offset = 0L,
   cpp_buffer_copy_from(x, buffer, src_offset, buffer_offset, size)
 }
 
+#' @rdname mtl_buffer
+#' @export
 mtl_buffer_slice <- function(buffer, x = raw(), buffer_offset = 0L,
                              size = mtl_buffer_size(buffer)) {
-  cpp_buffer_copy_into(buffer, x, buffer_offset, size)
+  result <- cpp_buffer_copy_into(buffer, x, buffer_offset, size)
+  class(result) <- class(x)
+  result
 }
 
 

@@ -70,6 +70,20 @@ test_that("mtl_buffer() creates buffers", {
   )
 })
 
+test_that("as_mtl_buffer() and mtl_buffer_convert() roundtrip values", {
+  buffer <- as_mtl_buffer(1:5)
+  expect_identical(mtl_buffer_convert(buffer), 1:5)
+
+  buffer <- as_mtl_buffer(as.double(1:5))
+  expect_identical(mtl_buffer_convert(buffer), as.double(1:5))
+
+  buffer <- as_mtl_buffer(as_mtl_floats(1:5))
+  expect_identical(mtl_buffer_convert(buffer), as_mtl_floats(1:5))
+
+  buffer <- as_mtl_buffer(as.raw(1:5))
+  expect_identical(mtl_buffer_convert(buffer), as.raw(1:5))
+})
+
 test_that("mtl_buffer() functions error for invalid params", {
   buffer <- mtl_buffer(100)
 
