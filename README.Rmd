@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of metal is to provide R bindings to [Apple Metal](https://developer.apple.com/metal/), which is Apple's API for GPU programming. If you have an M1 Mac, you've got a GPU built-in! This package will let you write and compile code written in the [Metal Shading Language](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf) (or write a package that uses the header-only Metal C++ library).
+The goal of metal is to provide R bindings to [Apple Metal](https://developer.apple.com/metal/), which is Apple's API for GPU programming. If you have an M1 Mac, you've got a GPU built-in! This package will let you write and compile code written in the [Metal Shading Language](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf) (or write a package that uses the header-only Metal C++ library). This is totally experimental and really was just an excuse to work through the [simple compute function tutorial](https://developer.apple.com/documentation/metal/performing_calculations_on_a_gpu) provided by Apple.
 
 ## Installation
 
@@ -55,6 +55,17 @@ lib <- mtl_make_library("
 ")
 
 lib
+```
+
+Create some buffers and execute!
+
+```{r}
+pipeline <- mtl_compute_pipeline(lib$add_arrays)
+result <- mtl_buffer(123, buffer_type = "float")
+in_a <- as_mtl_floats(1:123)
+in_b <- as_mtl_floats(rep(2, 123))
+mtl_compute_pipeline_execute(pipeline, 123, in_a, in_b, result)
+mtl_buffer_convert(result)
 ```
 
 ## Using the bundled metal-cpp
