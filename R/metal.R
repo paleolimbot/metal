@@ -24,7 +24,6 @@ print.mtl_device <- function(x, ...) {
   invisible(x)
 }
 
-
 #' Create a metal function library
 #'
 #' @param code Code in the metal shading language
@@ -104,7 +103,7 @@ print.mtl_library <- function(x, ...) {
 #' @export
 #'
 #' @examples
-#' mtl_buffer(1024)
+#' as_mtl_buffer(1:5)
 #'
 mtl_buffer <- function(size, device = mtl_default_device(),
                        buffer_type = c("uint8", "float", "int32", "double")) {

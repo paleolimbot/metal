@@ -74,6 +74,6 @@ These buffers have specific alignment that allow them to be shared
 between the GPU and CPU.
 }
 \examples{
-mtl_buffer(1024)
+as_mtl_buffer(1:5)
 
 }
