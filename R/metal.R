@@ -94,7 +94,9 @@ print.mtl_library <- function(x, ...) {
 #' @param buffer An [mtl_buffer()]
 #' @param x An object to convert to an [mtl_buffer()].
 #' @param size A size of the buffer or part of the buffer in bytes
-#' @param src_offset,buffer_offset Offsets into the sour
+#' @param src_offset,buffer_offset Offsets into the buffer (zero-based)
+#' @param buffer_type A logical type for the buffer
+#' @param start,length A slice of the buffer to resolve into an R vectors
 #' @inheritParams mtl_make_library
 #' @param ... Passed to S3 methods
 #'
@@ -173,12 +175,13 @@ mtl_buffer_convert <- function(buffer, start = 0L, length = NULL) {
     }
   )
 
+  size <- mtl_buffer_size(buffer)
   if (is.null(length)) {
-    length <- mtl_buffer_size(buffer) / element_size
+    length <- size / element_size
   }
 
   start_raw <- start * element_size
-  length_raw <- length * element_size
+  length_raw <- min(length * element_size, size - start_raw)
   mtl_buffer_slice(buffer, ptype, start_raw, length_raw)
 }
 
@@ -215,6 +218,20 @@ mtl_buffer_slice <- function(buffer, x = raw(), buffer_offset = 0L,
   result
 }
 
+#' @export
+print.mtl_buffer <- function(x, ...) {
+  str(x, ...)
+}
+
+#' @importFrom utils str
+#' @export
+str.mtl_buffer <- function(object, ...) {
+  cls <- class(object)[1]
+  cat(sprintf("<%s[%s b]> ", cls, mtl_buffer_size(object)))
+  proxy <- mtl_buffer_convert(object, length = 100L)
+  str(proxy, ...)
+  invisible(object)
+}
 
 mtl_compute_pipeline <- function(func) {
   cpp_compute_pipeline(func)

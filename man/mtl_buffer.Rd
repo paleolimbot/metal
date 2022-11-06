@@ -53,13 +53,17 @@ mtl_buffer_slice(
 
 \item{device}{A \link[=mtl_default_device]{mtl_device}}
 
+\item{buffer_type}{A logical type for the buffer}
+
 \item{x}{An object to convert to an \code{\link[=mtl_buffer]{mtl_buffer()}}.}
 
 \item{...}{Passed to S3 methods}
 
 \item{buffer}{An \code{\link[=mtl_buffer]{mtl_buffer()}}}
 
-\item{src_offset, buffer_offset}{Offsets into the sour}
+\item{start, length}{A slice of the buffer to resolve into an R vectors}
+
+\item{src_offset, buffer_offset}{Offsets into the buffer (zero-based)}
 }
 \value{
 An object of class 'mtl_buffer'
